@@ -92,11 +92,11 @@
 
   /* intro */
   .hero-visual{display:block; width:100%; height:auto; border-radius:10px; border:1px solid var(--line); background:#fff; margin:0 0 16px}
-  .intro p{margin:0 0 10px; font-size:14px}
+  .intro p{margin:0 0 12px; font-size:16px; line-height:1.55}
   .intro ul{margin:0 0 10px; padding-left:20px}
-  .intro li{margin:0 0 5px; font-size:14px}
+  .intro li{margin:0 0 7px; font-size:16px; line-height:1.5}
   .intro li b{color:var(--navy)}
-  .intro .conf{font-style:italic; color:var(--muted); font-size:12.5px; margin-bottom:4px}
+  .intro .conf{font-style:italic; color:var(--muted); font-size:14px; margin-bottom:4px}
 
   h2.axe-title{margin:0 0 2px; font-size:18px; color:var(--navy)}
   .axe-sub{margin:0 0 14px; font-size:13px; color:var(--muted)}
@@ -137,7 +137,7 @@
   .wrap.result .steps{display:none}
 
   /* résultat : radar (gauche) | synthèse + analyse & recommandations par axe (droite) */
-  .rgrid{display:grid; gap:24px; align-items:start}
+  .rgrid{display:grid; grid-template-columns:minmax(0,1fr); gap:24px; align-items:start}
   @media (min-width:900px){
     .rgrid{grid-template-columns:minmax(0,5fr) minmax(0,6fr)}
     .rleft{position:sticky; top:calc(16px + env(safe-area-inset-top,0px))}
@@ -192,6 +192,13 @@
   .xp .recbox{margin-top:10px; padding:10px 12px; border-left:3px solid var(--gold); background:var(--navy-soft); border-radius:0 6px 6px 0}
   .xp .recbox .rech{margin:0 0 3px; font-size:12.5px; font-weight:700; color:var(--gold)}
   .xp .recbox .lead{font-weight:700; font-style:italic; color:var(--navy)}
+  @media (max-width:560px){
+    .panel{padding:14px}
+    .xp>summary{flex-wrap:wrap; row-gap:4px}
+    .xp>summary .st{flex:1 1 60%}
+    .factions button{width:100%}
+    .result-title{font-size:19px}
+  }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
@@ -240,10 +247,10 @@ function L(o){ return o[LANG]; }
 const AXES = [
   { key:"Vision",
     label:{fr:"Vision", en:"Vision"},
-    sub:{fr:"La stratégie : les ambitions, les priorités, le portage par la direction.",
+    sub:{fr:"La stratégie : les ambitions, les priorités, le portage par la direction.",
          en:"Strategy: ambitions, priorities, leadership sponsorship."},
     questions:[
-    {n:1, t:{fr:"Où en êtes-vous sur une ambition IA appliquée à vos négociations ?",
+    {n:1, t:{fr:"Où en êtes-vous sur une ambition IA appliquée à vos négociations ?",
              en:"Where do you stand on an AI ambition applied to your negotiations?"},
       o:{fr:["Aucune réflexion formalisée","Des idées et discussions, mais rien de cadré","Une ambition définie, en partie déployée","Une vision claire, portée par la direction et reliée à nos priorités commerciales"],
          en:["No formal thinking yet","Ideas and discussions, but nothing framed","A defined ambition, partly deployed","A clear vision, led by management and tied to our commercial priorities"]}},
@@ -251,25 +258,25 @@ const AXES = [
              en:"Your AI priorities (where to start) in negotiation are…"},
       o:{fr:["Non définies","Floues, chacun teste dans son coin","Identifiées mais pas priorisées","Clairement priorisées et séquencées"],
          en:["Undefined","Vague, everyone experiments on their own","Identified but not prioritized","Clearly prioritized and sequenced"]}},
-    {n:3, t:{fr:"Les gains potentiels de l'IA appliquée à vos négociations sont :",
+    {n:3, t:{fr:"Les gains potentiels de l'IA appliquée à vos négociations sont :",
              en:"The potential gains of AI applied to your negotiations are:"},
       o:{fr:["Difficiles à évaluer aujourd'hui","Existants mais probablement limités","Significatifs, sans être encore chiffrés","Très importants, déjà partiellement identifiés"],
          en:["Hard to assess today","Real but probably limited","Significant, though not yet quantified","Very high, already partly identified"]}},
-    {n:5, t:{fr:"Un budget est-il dédié à l'IA pour la négo cette année ?",
+    {n:5, t:{fr:"Un budget est-il dédié à l'IA pour la négo cette année ?",
              en:"Is there a budget dedicated to AI for negotiation this year?"},
       o:{fr:["Aucun budget identifié","Budget de test / expérimentation","Budget défini, en cours de déploiement","Budget récurrent inscrit dans le plan pluriannuel"],
          en:["No budget identified","Test / pilot budget","Defined budget, being deployed","Recurring budget in the multi-year plan"]}},
   ]},
   { key:"Gouvernance",
     label:{fr:"Gouvernance", en:"Governance"},
-    sub:{fr:"Les règles du jeu : qui décide, ce qui est autorisé, protection de l'information sensible.",
+    sub:{fr:"Les règles du jeu : qui décide, ce qui est autorisé, protection de l'information sensible.",
          en:"Rules of the game: who decides, what's allowed, protecting sensitive information."},
     questions:[
-    {n:6, t:{fr:"Un cadre d'usage de l'IA est-il en place (charte, confidentialité) ?",
+    {n:6, t:{fr:"Un cadre d'usage de l'IA est-il en place (charte, confidentialité) ?",
              en:"Is an AI usage framework in place (charter, confidentiality)?"},
       o:{fr:["Non","En cours de réflexion","Charte diffusée, mais appliquée de façon inégale","Cadre formel appliqué et suivi"],
          en:["No","Under consideration","Charter shared, but unevenly applied","Formal framework applied and monitored"]}},
-    {n:7, t:{fr:"Qui porte le sujet IA en interne aujourd'hui ?",
+    {n:7, t:{fr:"Qui porte le sujet IA en interne aujourd'hui ?",
              en:"Who owns the AI topic internally today?"},
       o:{fr:["Personne n'est clairement désigné","Un référent informel","Un responsable dédié","Une équipe ou un comité dédié"],
          en:["No one is clearly designated","An informal point person","A dedicated owner","A dedicated team or committee"]}},
@@ -277,14 +284,14 @@ const AXES = [
              en:"Your sensitive data (prices, terms, margins) are…"},
       o:{fr:["Utilisées librement dans des outils d'IA publics","Manipulées avec prudence, mais sans règle","Encadrées par des règles, avec un contrôle partiel","Protégées et jamais exposées à des outils publics"],
          en:["Used freely in public AI tools","Handled cautiously, but with no rule","Governed by rules, with partial control","Protected and never exposed to public tools"]}},
-    {n:9, t:{fr:"Qui tranche sur ce qu'un négociateur a le droit de saisir dans un outil d'IA ?",
+    {n:9, t:{fr:"Qui tranche sur ce qu'un négociateur a le droit de saisir dans un outil d'IA ?",
              en:"Who decides what a negotiator may enter into an AI tool?"},
       o:{fr:["Personne, chacun fait comme il le sent","Une consigne orale, non écrite","Une règle écrite, connue de la plupart","Une règle écrite, contrôlée et appliquée"],
          en:["No one, everyone does as they see fit","A verbal, unwritten guideline","A written rule, known to most","A written rule, monitored and enforced"]}},
   ]},
   { key:"Data",
     label:{fr:"Data", en:"Data"},
-    sub:{fr:"La matière première, le carburant de l'IA : disponibilité, fiabilité et centralisation.",
+    sub:{fr:"La matière première, le carburant de l'IA : disponibilité, fiabilité et centralisation.",
          en:"The raw material, AI's fuel: availability, reliability and centralization."},
     questions:[
     {n:10, t:{fr:"L'accès à vos données nécessaires à la négo est…",
@@ -302,10 +309,10 @@ const AXES = [
   ]},
   { key:"Team",
     label:{fr:"Équipe", en:"Team"},
-    sub:{fr:"Vos équipes ont-elles été formées à l'IA ? Sont-elles motivées à l'utiliser ?",
+    sub:{fr:"Vos équipes ont-elles été formées à l'IA ? Sont-elles motivées à l'utiliser ?",
          en:"Have your teams been trained in AI? Are they motivated to use it?"},
     questions:[
-    {n:13, t:{fr:"Vos équipes ont-elles été formées à l'usage de l'IA ?",
+    {n:13, t:{fr:"Vos équipes ont-elles été formées à l'usage de l'IA ?",
               en:"Have your teams been trained to use AI?"},
       o:{fr:["Non, aucune formation à ce jour","Formations ponctuelles, à l'initiative de quelques-uns","Programme de formation en cours de déploiement","Formation structurée, avec accompagnement régulier"],
          en:["No, no training to date","Occasional training, driven by a few individuals","A training program being rolled out","Structured training, with regular coaching"]}},
@@ -320,52 +327,52 @@ const AXES = [
   ]},
   { key:"Techno",
     label:{fr:"Technologie", en:"Technology"},
-    sub:{fr:"La tuyauterie : les outils pour faire tourner l'IA et les connecter à vos systèmes.",
+    sub:{fr:"La tuyauterie : les outils pour faire tourner l'IA et les connecter à vos systèmes.",
          en:"The plumbing: tools to run AI and connect it to your systems."},
     questions:[
-    {n:17, t:{fr:"Accès à des outils d'IA de niveau entreprise, dans un cadre sécurisé ?",
+    {n:17, t:{fr:"Accès à des outils d'IA de niveau entreprise, dans un cadre sécurisé ?",
               en:"Access to enterprise-grade AI tools, within a secure framework?"},
       o:{fr:["Aucun accès, ou seulement des outils grand public","Accès individuel à des outils publics, sans cadre","Licences entreprise sécurisées pour certaines équipes","Environnement IA sécurisé, déployé et encadré"],
          en:["No access, or only consumer tools","Individual access to public tools, no framework","Secure enterprise licenses for some teams","A secure AI environment, deployed and governed"]}},
-    {n:18, t:{fr:"Vos systèmes informatiques (âge, cloud, capacité à évoluer) ?",
+    {n:18, t:{fr:"Vos systèmes informatiques (âge, cloud, capacité à évoluer) ?",
               en:"Your IT systems (age, cloud, ability to evolve)?"},
       o:{fr:["Anciens, peu ou pas de cloud, difficiles à faire évoluer","Mélange d'ancien et de récent, modernisation en cours","Majoritairement dans le cloud et à jour","Socle cloud moderne, prêt pour de nouvelles briques d'IA"],
          en:["Old, little or no cloud, hard to evolve","A mix of old and new, modernization underway","Mostly in the cloud and up to date","A modern cloud foundation, ready for new AI building blocks"]}},
-    {n:19, t:{fr:"Un outil d'IA pourrait-il se connecter à vos systèmes (CRM, ERP, contrats/prix) ?",
+    {n:19, t:{fr:"Un outil d'IA pourrait-il se connecter à vos systèmes (CRM, ERP, contrats/prix) ?",
               en:"Could an AI tool connect to your systems (CRM, ERP, contracts/prices)?"},
-      o:{fr:["Non, aucune connexion possible","Uniquement par copier-coller / ressaisie","Connexions partielles, certains systèmes seulement","Intégration fluide (API) : lecture et écriture"],
+      o:{fr:["Non, aucune connexion possible","Uniquement par copier-coller / ressaisie","Connexions partielles, certains systèmes seulement","Intégration fluide (API) : lecture et écriture"],
          en:["No, no connection possible","Only via copy-paste / re-keying","Partial connections, some systems only","Seamless integration (API): read and write"]}},
-    {n:20, t:{fr:"Si une solution IA sur mesure avait du sens, sauriez-vous à qui la confier ?",
+    {n:20, t:{fr:"Si une solution IA sur mesure avait du sens, sauriez-vous à qui la confier ?",
               en:"If a custom AI solution made sense, would you know who to entrust it to?"},
       o:{fr:["Non, aucune capacité interne ni partenaire","Bricolage individuel, sans support de l'IT","Une équipe IT/data ou un partenaire au cas par cas","Capacité établie pour livrer et maintenir dans la durée"],
          en:["No, no internal capacity or partner","Individual tinkering, no IT support","An IT/data team or a partner, case by case","An established capability to deliver and maintain over time"]}},
   ]},
   { key:"Adoption",
     label:{fr:"Adoption", en:"Adoption"},
-    sub:{fr:"Cas d'usage : l'IA est-elle utilisée au quotidien ?",
+    sub:{fr:"Cas d'usage : l'IA est-elle utilisée au quotidien ?",
          en:"Use cases: is AI used day-to-day?"},
     questions:[
-    {n:21, t:{fr:"Vos équipes de négo utilisent-elles déjà l'IA ?",
+    {n:21, t:{fr:"Vos équipes de négo utilisent-elles déjà l'IA ?",
               en:"Do your negotiation teams already use AI?"},
       o:{fr:["Pas du tout","Quelques négociateurs à titre individuel","Usage encouragé et outillé pour toute l'équipe","Intégré au processus de négo officiel"],
          en:["Not at all","A few negotiators individually","Use encouraged and equipped for the whole team","Built into the official negotiation process"]}},
-    {n:22, t:{fr:"Comment sont exploités les échanges pendant une négociation ?",
+    {n:22, t:{fr:"Comment sont exploités les échanges pendant une négociation ?",
               en:"How are exchanges during a negotiation used?"},
       o:{fr:["Notes manuelles + compte-rendu à la main","Enregistrement audio + compte-rendu manuel","Compte-rendu automatisé depuis l'audio (IA)","Workflow automatisé avec prompts spécifiques (IA)"],
          en:["Manual notes + handwritten summary","Audio recording + manual summary","Automated summary from audio (AI)","Automated workflow with specific prompts (AI)"]}},
-    {n:23, t:{fr:"Comment organisez-vous la veille ?",
+    {n:23, t:{fr:"Comment organisez-vous la veille ?",
               en:"How do you organize market/competitive watch?"},
       o:{fr:["Aucune veille organisée","Veille ponctuelle, à la main","Veille structurée avec outils dédiés","Veille automatisée avec IA (synthèses, signaux faibles)"],
          en:["No organized watch","Occasional watch, done by hand","Structured watch with dedicated tools","Automated watch with AI (summaries, weak signals)"]}},
-    {n:24, t:{fr:"Disposez-vous d'outils de simulation pour préparer vos négos ?",
+    {n:24, t:{fr:"Disposez-vous d'outils de simulation pour préparer vos négos ?",
               en:"Do you have simulation tools to prepare your negotiations?"},
       o:{fr:["Aucun outil de ce type","Fichiers Excel maison, au cas par cas","Outil interne standardisé et diffusé","Simulateur intégrant de l'IA (scénarios, apprentissage)"],
          en:["No such tool","Homemade Excel files, case by case","A standardized internal tool, rolled out","An AI-powered simulator (scenarios, learning)"]}},
-    {n:25, t:{fr:"Capitalisez-vous sur vos négociations passées ?",
+    {n:25, t:{fr:"Capitalisez-vous sur vos négociations passées ?",
               en:"Do you build on your past negotiations?"},
       o:{fr:["Non, chaque négo repart de zéro","Quelques retours d'expérience informels","Débrief structuré sur les dossiers importants","Base capitalisée et réutilisée systématiquement"],
          en:["No, each negotiation starts from scratch","A few informal lessons learned","Structured debriefs on major deals","A knowledge base, systematically reused"]}},
-    {n:26, t:{fr:"Savez-vous chiffrer ce qu'une négo bien/mal préparée vous coûte ?",
+    {n:26, t:{fr:"Savez-vous chiffrer ce qu'une négo bien/mal préparée vous coûte ?",
               en:"Can you quantify what a well/poorly prepared negotiation costs you?"},
       o:{fr:["Non, aucune mesure","Une estimation au doigt mouillé","Un chiffrage sur certains dossiers","Un suivi précis et régulier"],
          en:["No, no measurement","A rough guess","A calculation on some deals","Precise, regular tracking"]}},
@@ -385,16 +392,16 @@ const UI = {
     htmlLang:"fr", hTitle:"Diagnostic de maturité IA", miniTitle:"Votre profil en direct", home:"Accueil",
     introP:[
       "Bienvenue, et merci de nous accorder les 15 prochaines minutes.",
-      "L'intelligence artificielle change en profondeur la manière de <b>préparer et de conduire</b> vos négociations. Où en êtes-vous dans son adoption ? La vraie question n'est pas « faites-vous de l'IA ? », mais « êtes-vous équipé, organisé et prêt à <b>en tirer un avantage concret</b> dans vos négos ? »",
-      "Ce questionnaire est là pour vous aider à y voir clair, sur 6 axes complémentaires :"
+      "L'intelligence artificielle change en profondeur la manière de <b>préparer et de conduire</b> vos négociations. Où en êtes-vous dans son adoption ? La vraie question n'est pas « faites-vous de l'IA ? », mais « êtes-vous équipé, organisé et prêt à <b>en tirer un avantage concret</b> dans vos négos ? »",
+      "Ce questionnaire est là pour vous aider à y voir clair, sur 6 axes complémentaires :"
     ],
     introAxes:[
-      "<b>1. Vision</b> — Savez-vous ce que l'IA doit vous apporter, et pourquoi ?",
-      "<b>2. Gouvernance</b> — vos règles du jeu : qui décide de ce qui est autorisé ou pas ?",
-      "<b>3. Data</b> — votre matière première : sont-elles accessibles et exploitables par l'IA ?",
-      "<b>4. Équipe</b> — vos compétences : vos équipes savent-elles utiliser l'IA, et en ont-elles envie ?",
-      "<b>5. Technologie</b> — votre infrastructure : vos outils sont-ils modernes, sécurisés et connectés ?",
-      "<b>6. Adoption</b> — vos usages : l'IA est-elle utilisée au quotidien, avec des ROI concrets ?"
+      "<b>1. Vision</b> — Savez-vous ce que l'IA doit vous apporter, et pourquoi ?",
+      "<b>2. Gouvernance</b> — vos règles du jeu : qui décide de ce qui est autorisé ou pas ?",
+      "<b>3. Data</b> — votre matière première : sont-elles accessibles et exploitables par l'IA ?",
+      "<b>4. Équipe</b> — vos compétences : vos équipes savent-elles utiliser l'IA, et en ont-elles envie ?",
+      "<b>5. Technologie</b> — votre infrastructure : vos outils sont-ils modernes, sécurisés et connectés ?",
+      "<b>6. Adoption</b> — vos usages : l'IA est-elle utilisée au quotidien, avec des ROI concrets ?"
     ],
     introEnd:[
       "Vos réponses vous positionneront sur un diagramme révélant <b>vos points forts et vos zones à travailler</b>. Vous recevrez un rapport détaillé, avec des pistes concrètes adaptées à votre situation.",
@@ -403,49 +410,49 @@ const UI = {
     conf:"🔒 Vos réponses sont confidentielles.",
     back:"← Précédent", start:"Commencer →", next:"Suivant →", toResult:"Voir le résultat →", restart:"↺ Recommencer",
     page:"Page", qPrefix:"Q",
-    resultTitle:"Votre score", axesRecH:"Vos 6 axes : analyse et recommandations", diagramTitle:"Votre diagramme", yourScore:"Votre score",
-    kDef:"Définition :", kEx:"Exemple :", kCrit:"Critère de succès :",
+    resultTitle:"Votre score", axesRecH:"Vos 6 axes : analyse et recommandations", diagramTitle:"Votre diagramme", yourScore:"Votre score",
+    kDef:"Définition :", kEx:"Exemple :", kCrit:"Critère de succès :",
     levels:["Émergent","En exploration","En structuration","Avancé"],
     levelDesc:[
-      "L'IA n'est pas encore un levier dans vos négociations. Les fondations restent à poser : ambition, règles du jeu et premiers usages.",
+      "L'IA n'est pas encore un levier dans vos négociations. Les fondations restent à poser : ambition, règles du jeu et premiers usages.",
       "Des initiatives existent, mais elles restent dispersées. L'enjeu est de cadrer et de prioriser pour passer de l'expérimentation à l'impact.",
       "Votre démarche est structurée sur plusieurs axes. L'enjeu est désormais d'industrialiser les usages et d'en mesurer le ROI.",
       "L'IA est un véritable levier dans vos négociations. L'enjeu est de conserver votre avance et d'étendre les usages à forte valeur."
     ],
     levelLbl:"Niveau", summaryH:"Synthèse de vos résultats", strengthsH:"Vos points forts", prioritiesH:"Vos axes prioritaires",
-    gapNote:(a,b)=>`Votre profil est déséquilibré : l'écart entre « ${a} » et « ${b} » risque de freiner vos progrès. Les axes les plus faibles limitent la valeur des plus avancés.`,
-    evenNote:"Votre profil est plutôt homogène : vos axes progressent au même rythme, ce qui facilite un déploiement cohérent.",
-    incomplete:"Certains axes n'ont pas été renseignés : ils n'apparaissent pas dans le calcul.",
-    formTitle:"Recevez votre rapport en PDF", formSub:"Renseignez vos coordonnées pour télécharger votre rapport : score, diagramme, synthèse, recommandations et accompagnement WeNego.",
+    gapNote:(a,b)=>`Votre profil est déséquilibré : l'écart entre « ${a} » et « ${b} » risque de freiner vos progrès. Les axes les plus faibles limitent la valeur des plus avancés.`,
+    evenNote:"Votre profil est plutôt homogène : vos axes progressent au même rythme, ce qui facilite un déploiement cohérent.",
+    incomplete:"Certains axes n'ont pas été renseignés : ils n'apparaissent pas dans le calcul.",
+    formTitle:"Recevez votre rapport en PDF", formSub:"Renseignez vos coordonnées pour télécharger votre rapport : score, diagramme, synthèse, recommandations et accompagnement WeNego.",
     fFirst:"Prénom", fLast:"Nom", fEmail:"Email professionnel", fCompany:"Entreprise",
-    fFeedback:"Votre avis sur ce diagnostic", fFeedbackPh:"Quelque chose à ajouter ? Toute information complémentaire que vous souhaitez nous partager…",
+    fFeedback:"Votre avis sur ce diagnostic", fFeedbackPh:"Quelque chose à ajouter ? Toute information complémentaire que vous souhaitez nous partager…",
     fBtn:"Télécharger le rapport PDF", fBusy:"Génération en cours…",
     fNote:"Nous vous enverrons prochainement votre rapport personnalisé par email.",
     fErrReq:"Merci de remplir tous les champs obligatoires.", fErrEmail:"Merci de saisir une adresse email valide.", fErrLib:"Le module PDF n'a pas pu se charger. Vérifiez votre connexion et réessayez.",
     pdfTitle:"Diagnostic de maturité IA", pdfFor:"Préparé pour", pdfCompany:"Entreprise", pdfEmail:"Email", pdfDate:"Date",
     pdfIntroH:"Introduction",
     pdfIntro:[
-      "L'intelligence artificielle change en profondeur la manière de préparer et de conduire les négociations. La vraie question n'est pas « faites-vous de l'IA ? », mais « êtes-vous équipé, organisé et prêt à en tirer un avantage concret dans vos négos ? »",
-      "Ce rapport restitue vos réponses au diagnostic sur 6 axes complémentaires — Vision, Gouvernance, Data, Équipe, Technologie et Adoption. Chaque axe est noté de 1 à 5 : plus le score est élevé, plus votre organisation est prête sur cet axe."
+      "L'intelligence artificielle change en profondeur la manière de préparer et de conduire les négociations. La vraie question n'est pas « faites-vous de l'IA ? », mais « êtes-vous équipé, organisé et prêt à en tirer un avantage concret dans vos négos ? »",
+      "Ce rapport restitue vos réponses au diagnostic sur 6 axes complémentaires — Vision, Gouvernance, Data, Équipe, Technologie et Adoption. Chaque axe est noté de 1 à 5 : plus le score est élevé, plus votre organisation est prête sur cet axe."
     ],
     pdfDiagramH:"Votre diagramme", pdfDiagramNote:"Plus la zone s'étend vers l'extérieur de la toile, plus vous êtes avancé sur l'axe concerné.",
     colAxis:"Axe", colScore:"Score", colLevel:"Niveau",
     pdfAxesH:"Les 6 axes expliqués", pdfFooter:"WeNego — Diagnostic de maturité IA — Confidentiel", fileBase:"WeNego_Diagnostic_IA",
     explains:[
       {sum:"Vision — la stratégie",
-       def:"Le « pourquoi ». L'entreprise a-t-elle une idée claire de ce que l'IA doit lui apporter, en particulier en négociation ?",
+       def:"Le « pourquoi ». L'entreprise a-t-elle une idée claire de ce que l'IA doit lui apporter, en particulier en négociation ?",
        ex:"Le Comex a décidé que l'IA doit servir des priorités précises — mieux préparer les négociations annuelles, optimiser la tarification et sécuriser les marges face à la pression des distributeurs.",
        crit:"Une ambition IA écrite, reliée aux enjeux commerciaux, portée par un sponsor au board et dotée d'un budget dédié — plutôt que des essais dispersés marque par marque."},
       {sum:"Gouvernance — le contrôle",
-       def:"Le « comment » : les règles du jeu — qui décide, ce qui est autorisé, et comment on protège l'information sensible (prix nets, conditions par client, marges).",
+       def:"Le « comment » : les règles du jeu — qui décide, ce qui est autorisé, et comment on protège l'information sensible (prix nets, conditions par client, marges).",
        ex:"Une politique groupe interdit de mettre des conditions commerciales ou des grilles tarifaires dans des outils d'IA publics, et un responsable valide les usages sensibles.",
        crit:"Des règles claires et connues de tous, un responsable identifié, la conformité (ex. RGPD) intégrée dès le départ — plutôt que des équipes qui collent des accords dans les IA."},
       {sum:"Data — la matière première",
-       def:"L'IA se nourrit de vos données comme un moteur de son carburant. Vos données commerciales sont-elles disponibles, fiables, bien rangées, accessibles et tenues à jour ?",
+       def:"L'IA se nourrit de vos données comme un moteur de son carburant. Vos données commerciales sont-elles disponibles, fiables, bien rangées, accessibles et tenues à jour ?",
        ex:"Historique de négociation, emails, contrats, organigrammes, données sell-out, prix des matières premières…",
        crit:"Des données accessibles, à jour et centralisées, exploitables par un moteur RAG ou un LLM à large contexte — plutôt que des fichiers éparpillés à analyser à la main à chaque négo."},
       {sum:"Équipe — les compétences",
-       def:"Le « qui ». Vos négociateurs savent-ils utiliser l'IA, et en ont-ils envie ? Le meilleur outil ne sert à rien si les équipes ne l'adoptent pas.",
+       def:"Le « qui ». Vos négociateurs savent-ils utiliser l'IA, et en ont-ils envie ? Le meilleur outil ne sert à rien si les équipes ne l'adoptent pas.",
        ex:"Des négociateurs formés à l'IA générative et à l'IA agentique, accompagnés dans la durée pour s'approprier ces nouveaux outils.",
        crit:"Des formations graduées et adaptées à chaque profil. Présence de champions — des négociateurs référents qui diffusent les bonnes pratiques."},
       {sum:"Technologie & Infrastructure",
@@ -453,7 +460,7 @@ const UI = {
        ex:"Les outils de préparation de négociation sont connectés aux ERP et à la BI ; les négociateurs accèdent à une vue consolidée d'un client / fournisseur.",
        crit:"Des outils modernes, sécurisés et bien intégrés au SI, capables de passer à l'échelle sur tous les comptes clés — plutôt que des pilotes isolés qui ne se connectent à rien."},
       {sum:"Adoption — cas d'usage et ROI",
-       def:"Le « et alors ? ». L'IA est-elle vraiment utilisée au quotidien, au-delà des démos ? Existe-t-il des usages clairs avec des ROI documentés ?",
+       def:"Le « et alors ? ». L'IA est-elle vraiment utilisée au quotidien, au-delà des démos ? Existe-t-il des usages clairs avec des ROI documentés ?",
        ex:"Préparation des négociations annuelles assistée par l'IA (analyse des accords passés, simulation de scénarios tarifaires, anticipation des demandes de la partie adverse, KPIs).",
        crit:"Plusieurs cas en production avec un ROI mesuré (marge, temps gagné) et des équipes qui s'en servent réellement — plutôt que des POC sans usage concret."}
     ]
@@ -540,34 +547,34 @@ const UI = {
 // ================= contenu du rapport : recommandations par axe =================
 const REPORT = {
   fr:{
-    recH:"Recommandations", recSub:"Voici quelques propositions d'actions à mener, axe par axe.", axesSub:"Pour chaque axe : ce qu'il recouvre, votre score, puis les actions que nous vous proposons de mener.", prioTag:"Axe prioritaire",
+    recH:"Recommandations", recSub:"Voici quelques propositions d'actions à mener, axe par axe.", axesSub:"Pour chaque axe : ce qu'il recouvre, votre score, puis les actions que nous vous proposons de mener.", prioTag:"Axe prioritaire",
     rec:[
       {t:"Vision IA", s:"Une ambition IA claire, écrite et partagée", items:[
-        "Formaliser une note d'ambition « IA & négociation » : objectifs, cibles chiffrées, périmètre, sponsor.",
+        "Formaliser une note d'ambition « IA & négociation » : objectifs, cibles chiffrées, périmètre, sponsor.",
         "Désigner un sponsor au board et un porteur opérationnel côté direction commerciale.",
         "Choisir un cas pilote à fort enjeu (ex. négociations annuelles d'un top-3 client).",
         "Inscrire un budget dédié (test puis déploiement) au plan."]},
       {t:"Gouvernance IA", s:"Les règles du jeu et la protection de l'information", items:[
-        "Rédiger une charte d'usage IA en négociation : données autorisées / interdites, outils validés, cas d'escalade.",
+        "Rédiger une charte d'usage IA en négociation : données autorisées / interdites, outils validés, cas d'escalade.",
         "Nommer un responsable des usages sensibles.",
         "Retenir des outils de niveau entreprise (données non réutilisées pour l'entraînement).",
         "Sensibiliser les négociateurs aux réflexes de confidentialité.",
         "Prévoir un contrôle léger et régulier (ex. revue trimestrielle)."]},
-      {t:"Data", s:"Le carburant de l'IA : des données disponibles, fiables et centralisées", items:[
-        "Cartographier les données clés de négociation : où elles sont, qui les tient, dans quel état.",
-        "Centraliser l'essentiel par compte-clé : historique d'accords, contrats, conditions…",
+      {t:"Data", s:"Le carburant de l'IA : des données disponibles, fiables et centralisées", items:[
+        "Cartographier les données clés de négociation : où elles sont, qui les tient, dans quel état.",
+        "Centraliser l'essentiel par compte-clé : historique d'accords, contrats, conditions…",
         "Réaliser un audit express des données disponibles sur 1 ou 2 comptes pilotes.",
         "Nettoyer et dater les sources prioritaires avant tout projet IA.",
         "Constituer une base par client, exploitable par un moteur RAG."]},
       {t:"Équipe", s:"Des négociateurs formés, motivés et accompagnés", items:[
         "Évaluer le niveau réel des négociateurs par des assessments.",
-        "Mettre en place un programme de formation gradué : IA générative puis IA agentique.",
+        "Mettre en place un programme de formation gradué : IA générative puis IA agentique.",
         "Former par la pratique, sur de vrais dossiers de négociation.",
         "Identifier et outiller 2 ou 3 champions par équipe.",
         "Accompagner l'appropriation dans la durée.",
-        "Installer un rituel de partage : ce qui a marché, les prompts utiles."]},
+        "Installer un rituel de partage : ce qui a marché, les prompts utiles."]},
       {t:"Technologie", s:"Des outils modernes, sécurisés et connectés", items:[
-        "Cadrage technique avec votre DSI : ce qui est connectable, à quel coût.",
+        "Cadrage technique avec votre DSI : ce qui est connectable, à quel coût.",
         "Vérifier la connectabilité des systèmes qui portent la donnée de négo (CRM, ERP, référentiel contrats / prix).",
         "Sécuriser un environnement IA de niveau entreprise.",
         "Démarrer par une intégration légère (vue client consolidée) avant le sur-mesure.",
@@ -575,10 +582,10 @@ const REPORT = {
         "Spécifier un premier outil de préparation augmentée, connecté à vos données."]},
       {t:"Adoption", s:"Des usages réels, mesurés, au-delà des démos", items:[
         "Identifier dans le processus de négociation les étapes où l'IA aurait le plus d'impact.",
-        "Définir 2 ou 3 KPI simples avant de démarrer : temps de préparation, marge, taux d'accord.",
+        "Définir 2 ou 3 KPI simples avant de démarrer : temps de préparation, marge, taux d'accord.",
         "Choisir un cas de négociation à ROI rapide et mesurable.",
-        "Livrer des outils concrets : prompts, automatisations, agents IA.",
-        "Passer du POC à l'usage réel : intégrer l'outil au processus officiel de négociation.",
+        "Livrer des outils concrets : prompts, automatisations, agents IA.",
+        "Passer du POC à l'usage réel : intégrer l'outil au processus officiel de négociation.",
         "Mettre en place un débrief structuré après chaque négo majeure et une base capitalisée."]}
     ]
   },
@@ -813,12 +820,12 @@ function fmtScore(v){ const dec = LANG==='fr' ? ',' : '.'; return v==null?'—':
 // ================= radar (écran résultat + PDF) — style « radar final » =================
 const DIAG = {navy:'#1B2A4A', gold:'#C9A227', line:'#E2E5EA'};
 const FONT = '-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif';
-function drawRadarChart(canvas, vals, W, H, fs){
+function drawRadarChart(canvas, vals, W, H, fs, rf=0.34){
   if(canvas.width!==W) canvas.width=W;
   if(canvas.height!==H) canvas.height=H;
   const c=canvas.getContext('2d');
   c.clearRect(0,0,W,H); c.fillStyle='#fff'; c.fillRect(0,0,W,H);
-  const N=AXES.length, cx=W/2, cy=H/2, R=Math.min(W,H)*0.34;
+  const N=AXES.length, cx=W/2, cy=H/2, R=Math.min(W,H)*rf;
   const ang=i=>(-Math.PI/2)+i*2*Math.PI/N, pt=(i,r)=>[cx+Math.cos(ang(i))*r, cy+Math.sin(ang(i))*r];
   // toile : 5 anneaux + graduations 1 → 5
   c.lineWidth=fs*0.05; c.strokeStyle=DIAG.line;
@@ -845,13 +852,25 @@ function drawRadarChart(canvas, vals, W, H, fs){
     if(si<-0.3){ c.textBaseline='bottom'; y2=ly; y1=ly-lh; }
     else if(si>0.3){ c.textBaseline='top'; y1=ly; y2=ly+lh; }
     else { c.textBaseline='middle'; y1=ly-lh/2; y2=ly+lh/2; }
-    c.fillStyle=DIAG.navy; c.font=`700 ${fs}px ${FONT}`; c.fillText((i+1)+'. '+L(AXES[i].label), lx, y1);
-    c.fillStyle=DIAG.gold; c.font=`700 ${fs*0.85}px ${FONT}`; c.fillText(fmtScore(vals[i])+' / 5', lx, y2);
+    const name=(i+1)+'. '+L(AXES[i].label), pad=fs*0.3;
+    c.font=`700 ${fs}px ${FONT}`; const tw=c.measureText(name).width;
+    let x=lx; // garder le libellé dans le cadre (petits écrans)
+    if(c.textAlign==='left' && x+tw>W-pad) x=W-pad-tw;
+    if(c.textAlign==='right' && x-tw<pad) x=pad+tw;
+    if(c.textAlign==='center') x=Math.max(pad+tw/2, Math.min(W-pad-tw/2, x));
+    c.fillStyle=DIAG.navy; c.fillText(name, x, y1);
+    c.fillStyle=DIAG.gold; c.font=`700 ${fs*0.85}px ${FONT}`; c.fillText(fmtScore(vals[i])+' / 5', x, y2);
   }
 }
 let cv;
 function bindRadarCanvas(){ cv=document.getElementById('radar'); }
-function drawRadar(vals){ if(cv) drawRadarChart(cv, vals, 1100, 860, 32); }
+function drawRadar(vals){
+  if(!cv) return;
+  const w = cv.clientWidth || window.innerWidth;
+  if(w < 520) drawRadarChart(cv, vals, 1000, 860, 46, 0.27);   // mobile : libellés plus gros
+  else drawRadarChart(cv, vals, 1100, 860, 32);
+}
+let rsz; window.addEventListener('resize',()=>{ clearTimeout(rsz); rsz=setTimeout(()=>{ if(cur===LAST) drawRadar(lastScores); },150); });
 
 // ================= mini radar (latéral) =================
 function cssvar(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
