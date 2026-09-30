@@ -1,4 +1,5 @@
 <!-- radar V17 : page résultat = score > synthèse > [6 axes | diagramme] ; 2 tailles de police uniquement (--fs-title / --fs-text) -->
+<!-- V18 : PDF en 3 pages (intro / 6 axes / recommandations), bloc WeNego en pied de la page résultat, mini-radar avec contour cible + légende, radar compact repliable sur mobile -->
 <!-- V17 : dans chaque axe, « Recommandations : » + titre de la reco sur une seule ligne -->
 <!-- Logo : lien vers https://www.wenego.fr/?lang=en ou ?lang=fr selon la langue active -->
 <!DOCTYPE html>
@@ -67,8 +68,28 @@
   /* radar latéral (desktop, pendant le remplissage) */
   .side-radar{display:none}
   .side-radar .card{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px}
-  .side-radar h3{margin:0 0 8px; color:var(--navy); text-align:center}
+  .side-radar .mr-head{display:flex; align-items:center; justify-content:center; gap:8px; width:100%; margin:0 0 8px; padding:0; border:0; background:none; color:var(--navy); font-size:var(--fs-title); font-weight:700; cursor:default}
+  .side-radar .mr-head:hover{background:none; color:var(--navy)}
+  .side-radar .mr-chev{display:none; width:8px; height:8px; border-right:2px solid var(--muted); border-bottom:2px solid var(--muted); transform:rotate(-135deg); transition:transform .15s}
   .side-radar canvas{width:100%; height:auto; display:block}
+  .side-radar .mr-legend{margin:8px 0 0; color:var(--muted); text-align:center; line-height:1.4}
+  .side-radar .mr-legend .dash{display:inline-block; width:18px; border-top:2px dashed var(--gold); vertical-align:middle; margin-right:6px}
+  .side-radar .mr-count{display:block; margin-top:2px; font-weight:700; color:var(--navy)}
+  /* mobile / tablette : radar compact en haut, collant et repliable ; questions en pleine largeur */
+  @media (max-width:959px){
+    .wrap.filling{display:flex; flex-direction:column}
+    .wrap.filling .topbar{order:1}
+    .wrap.filling .steps{order:2}
+    .wrap.filling .side-radar{order:3; display:block; position:sticky; top:env(safe-area-inset-top,0px); z-index:5; margin-bottom:12px}
+    .wrap.filling #app{order:4}
+    .side-radar .card{padding:10px 12px; box-shadow:0 6px 16px rgba(0,0,0,.08)}
+    .side-radar .mr-head{cursor:pointer; margin:0; justify-content:space-between}
+    .side-radar .mr-chev{display:block}
+    .side-radar .mr-body{margin-top:8px}
+    .side-radar canvas{width:auto; max-width:100%; max-height:30vh; margin:0 auto}
+    .side-radar.collapsed .mr-body{display:none}
+    .side-radar.collapsed .mr-chev{transform:rotate(45deg)}
+  }
   @media (min-width:960px){
     .wrap.filling{
       max-width:1120px; display:grid;
@@ -183,6 +204,24 @@
   .xp .recbox .lead{margin:0 0 6px; font-weight:700; font-style:italic; color:var(--navy)}
   .xp .recbox .lead .rech{font-style:normal; color:var(--gold)}
 
+  /* bloc WeNego (pied de la page résultat) */
+  .about{margin-top:26px; background:#1B2A4A; color:#fff; border-radius:12px; padding:22px 24px}
+  .about-grid{display:grid; grid-template-columns:1.6fr 1fr auto; gap:40px; align-items:center}
+  .about-text p{margin:0; line-height:1.6; color:#fff}
+  .about-stats{display:flex; flex-direction:column; gap:8px; padding-left:28px; border-left:1px solid rgba(255,255,255,.15)}
+  .about-stat{display:flex; align-items:baseline; gap:10px; line-height:1.6}
+  .about-stat .num{font-weight:700; min-width:4.5em; color:#C9A227}
+  .about-stat .lbl{opacity:.8}
+  .about-cta{justify-self:end}
+  .about-cta a{display:inline-block; padding:10px 18px; border-radius:999px; background:#C9A227; color:#1B2A4A; font-weight:700; text-decoration:none; white-space:nowrap}
+  .about-cta a:hover{filter:brightness(1.06)}
+  .about-cta a:focus-visible{outline:2px solid #fff; outline-offset:3px}
+  @media (max-width:900px){
+    .about-grid{grid-template-columns:1fr; gap:22px}
+    .about-stats{padding-left:0; border-left:none}
+    .about-cta{justify-self:start}
+  }
+
   /* formulaire rapport */
   .report-form{margin-top:30px; border:1px solid var(--gold); border-radius:12px; padding:18px; background:var(--navy-soft)}
   .report-form h3{margin:0 0 4px; font-size:var(--fs-title); color:var(--navy)}
@@ -229,8 +268,11 @@
 
   <aside class="side-radar" aria-hidden="true">
     <div class="card">
-      <h3 id="miniTitle">Your live profile</h3>
-      <canvas id="miniRadar" width="760" height="620" aria-label="Radar"></canvas>
+      <button type="button" class="mr-head" id="mrHead" aria-expanded="true" aria-controls="mrBody"><span id="miniTitle">Your live profile</span><span class="mr-chev" aria-hidden="true"></span></button>
+      <div class="mr-body" id="mrBody">
+        <canvas id="miniRadar" width="760" height="620" aria-label="Radar"></canvas>
+        <p class="mr-legend"><span class="dash" aria-hidden="true"></span><span id="mrLegend"></span><span class="mr-count" id="mrCount"></span></p>
+      </div>
     </div>
   </aside>
 </div>
@@ -451,7 +493,13 @@ const UI = {
     fFirst:"Prénom", fLast:"Nom", fEmail:"Email professionnel", fCompany:"Entreprise",
     fFeedback:"Votre avis sur ce diagnostic", fFeedbackPh:"Quelque chose à ajouter ? Toute information complémentaire que vous souhaitez nous partager…",
     fBtn:"Télécharger le rapport PDF", fBusy:"Génération en cours…",
-    fNote:"Nous vous enverrons prochainement votre rapport personnalisé par email.",
+    fNote:"Votre rapport PDF se télécharge immédiatement. Sous 24 heures, nous vous enverrons également par email un rapport personnalisé.",
+    fDone:"Votre rapport PDF a été téléchargé. Vous recevrez votre rapport personnalisé par email sous 24 heures.",
+    miniLegend:"Votre profil se dessine au fil de vos réponses. Le contour pointillé indique le maximum (5/5) sur chaque axe.",
+    miniCount:(n,t)=>`${n} / ${t} axes commencés`,
+    about:{text:"WeNego conçoit et anime des ateliers de négociation avancée, du coaching et du conseil pour les équipes achats, ventes et commerciales, afin de faire de la négociation une compétence reproductible et mesurable, au ROI immédiat.",
+      stats:[["~1000","Négociateurs formés"],["120+","Séminaires animés"],["15 ans","Dans la négociation"]],
+      cta:"Visiter wenego.fr", url:"https://www.wenego.fr/?lang=fr"},
     fErrReq:"Merci de remplir tous les champs obligatoires.", fErrEmail:"Merci de saisir une adresse email valide.", fErrLib:"Le module PDF n'a pas pu se charger. Vérifiez votre connexion et réessayez.",
     pdfTitle:"Diagnostic de maturité IA", pdfFor:"Préparé pour", pdfCompany:"Entreprise", pdfEmail:"Email", pdfDate:"Date",
     pdfIntroH:"Introduction",
@@ -528,7 +576,13 @@ const UI = {
     fFirst:"First name", fLast:"Last name", fEmail:"Business email", fCompany:"Company",
     fFeedback:"Your feedback on this diagnostic", fFeedbackPh:"Anything to add? Any further information you would like to share…",
     fBtn:"Download PDF report", fBusy:"Generating…",
-    fNote:"We will send you your personalized report by email soon.",
+    fNote:"Your PDF report downloads right away. Within 24 hours, we will also email you a personalized report.",
+    fDone:"Your PDF report has been downloaded. You will receive your personalized report by email within 24 hours.",
+    miniLegend:"Your profile takes shape as you answer. The dashed outline shows the maximum (5/5) on each axis.",
+    miniCount:(n,t)=>`${n} / ${t} axes started`,
+    about:{text:"WeNego designs and delivers advanced negotiation workshops, coaching and consultancy for procurement, sales and commercial teams, turning negotiation into a repeatable, measurable skill with immediate ROI.",
+      stats:[["~1000","Negotiators trained"],["120+","Seminars delivered"],["15 yrs","In negotiation"]],
+      cta:"Visit wenego.fr", url:"https://www.wenego.fr/?lang=en"},
     fErrReq:"Please fill in all required fields.", fErrEmail:"Please enter a valid email address.", fErrLib:"The PDF module could not load. Check your connection and try again.",
     pdfTitle:"AI Maturity Diagnostic", pdfFor:"Prepared for", pdfCompany:"Company", pdfEmail:"Email", pdfDate:"Date",
     pdfIntroH:"Introduction",
@@ -745,6 +799,15 @@ function buildScreens(){
         <span class="fmsg" id="fmsg" role="status">${U.fNote}</span>
       </div>
     </div>
+    <footer class="about" aria-label="WeNego">
+      <div class="about-grid">
+        <div class="about-text"><p>${esc(U.about.text)}</p></div>
+        <div class="about-stats">
+          ${U.about.stats.map(st=>`<div class="about-stat"><span class="num">${esc(st[0])}</span><span class="lbl">${esc(st[1])}</span></div>`).join('')}
+        </div>
+        <div class="about-cta"><a href="${U.about.url}" target="_blank" rel="noopener">${esc(U.about.cta)} →</a></div>
+      </div>
+    </footer>
   `;
   res.appendChild(nav(LAST));
   res.appendChild(navFoot());
@@ -771,6 +834,7 @@ function applyLangChrome(){
   document.getElementById('brandBtn').href = SITE_URL + '?lang=' + LANG;
   document.getElementById('phTitle').textContent = U.hTitle;
   document.getElementById('miniTitle').textContent = U.miniTitle;
+  document.getElementById('mrLegend').textContent = U.miniLegend;
   document.querySelectorAll('#langbar button').forEach(b=>{
     const on = b.dataset.lang===LANG;
     b.classList.toggle('on', on);
@@ -901,31 +965,62 @@ function cssvar(v){return getComputedStyle(document.documentElement).getProperty
 function hexA(hex,a){ if(hex.startsWith('#')){const n=parseInt(hex.slice(1),16);return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;} return hex; }
 const mcv=document.getElementById('miniRadar'), mctx=mcv.getContext('2d');
 function miniScores(){ return AXES.map(ax=>{const s=axisScore(ax); return s==null?null:s*5/4;}); }
-function updateMini(){ drawMini(miniScores()); }
+function updateMini(){
+  const vals=miniScores();
+  drawMini(vals);
+  const el=document.getElementById('mrCount');
+  if(el) el.textContent=UI[LANG].miniCount(vals.filter(v=>v!=null).length, AXES.length);
+}
 function drawMini(vals){
   const W=mcv.width,H=mcv.height,cx=W/2,cy=H/2,R=Math.min(W,H)*0.32;
-  const N=AXES.length,navy=cssvar('--navy'),gold=cssvar('--gold'),line=cssvar('--line');
+  const N=AXES.length,navy=cssvar('--navy'),gold=cssvar('--gold'),line=cssvar('--line'),muted=cssvar('--muted');
   mctx.clearRect(0,0,W,H);
   const ang=i=>(-Math.PI/2)+i*2*Math.PI/N, pt=(i,r)=>[cx+Math.cos(ang(i))*r, cy+Math.sin(ang(i))*r];
-  mctx.lineWidth=1; mctx.strokeStyle=line;
-  for(let g=1;g<=5;g++){const r=R*g/5; mctx.beginPath();
+  // grille
+  mctx.lineWidth=1; mctx.strokeStyle=line; mctx.setLineDash([]);
+  for(let g=1;g<=4;g++){const r=R*g/5; mctx.beginPath();
     for(let i=0;i<=N;i++){const[x,y]=pt(i%N,r); i?mctx.lineTo(x,y):mctx.moveTo(x,y);} mctx.stroke();}
-  mctx.fillStyle=navy; mctx.font='700 26px sans-serif';
-  for(let i=0;i<N;i++){const[x,y]=pt(i,R); mctx.beginPath(); mctx.moveTo(cx,cy); mctx.lineTo(x,y); mctx.stroke();
+  for(let i=0;i<N;i++){const[x,y]=pt(i,R); mctx.beginPath(); mctx.moveTo(cx,cy); mctx.lineTo(x,y); mctx.stroke();}
+  // contour cible « à remplir » (5/5) en pointillé
+  mctx.beginPath();
+  for(let i=0;i<=N;i++){const[x,y]=pt(i%N,R); i?mctx.lineTo(x,y):mctx.moveTo(x,y);}
+  mctx.setLineDash([10,8]); mctx.strokeStyle=hexA(gold,0.9); mctx.lineWidth=2.5; mctx.stroke(); mctx.setLineDash([]);
+  // libellés
+  mctx.font='700 26px sans-serif';
+  for(let i=0;i<N;i++){
     const[lx,ly]=pt(i,R+20);
+    mctx.fillStyle = vals[i]==null ? muted : navy;
     mctx.textAlign=Math.abs(Math.cos(ang(i)))<0.3?'center':(Math.cos(ang(i))>0?'left':'right');
     mctx.textBaseline=Math.sin(ang(i))>0.3?'top':(Math.sin(ang(i))<-0.3?'bottom':'middle');
-    mctx.fillText((i+1)+'. '+L(AXES[i].label),lx,ly);}
+    mctx.fillText((i+1)+'. '+L(AXES[i].label),lx,ly);
+  }
+  // repères vides sur les axes non commencés
+  for(let i=0;i<N;i++) if(vals[i]==null){
+    const[x,y]=pt(i,R); mctx.beginPath(); mctx.arc(x,y,6,0,7);
+    mctx.fillStyle=cssvar('--card')||'#fff'; mctx.fill(); mctx.strokeStyle=hexA(gold,0.9); mctx.lineWidth=2; mctx.stroke();
+  }
   const idx=[]; for(let i=0;i<N;i++) if(vals[i]!=null) idx.push(i);
   if(idx.length>=3){
     mctx.beginPath(); idx.forEach((i,k)=>{const[x,y]=pt(i,R*vals[i]/5); k?mctx.lineTo(x,y):mctx.moveTo(x,y);});
     mctx.closePath(); mctx.fillStyle=hexA(navy,0.22); mctx.fill(); mctx.strokeStyle=gold; mctx.lineWidth=3; mctx.stroke();
-  } else if(idx.length===2){
-    const[a,b]=idx,[x1,y1]=pt(a,R*vals[a]/5),[x2,y2]=pt(b,R*vals[b]/5);
-    mctx.beginPath(); mctx.moveTo(x1,y1); mctx.lineTo(x2,y2); mctx.strokeStyle=gold; mctx.lineWidth=3; mctx.stroke();
+  } else {
+    // 1 ou 2 axes : rayons depuis le centre pour que le point ne paraisse pas isolé
+    mctx.strokeStyle=gold; mctx.lineWidth=3;
+    idx.forEach(i=>{const[x,y]=pt(i,R*vals[i]/5); mctx.beginPath(); mctx.moveTo(cx,cy); mctx.lineTo(x,y); mctx.stroke();});
+    if(idx.length===2){const[a,b]=idx,[x1,y1]=pt(a,R*vals[a]/5),[x2,y2]=pt(b,R*vals[b]/5);
+      mctx.beginPath(); mctx.moveTo(x1,y1); mctx.lineTo(x2,y2); mctx.stroke();}
   }
-  idx.forEach(i=>{const[x,y]=pt(i,R*vals[i]/5); mctx.beginPath(); mctx.arc(x,y,5,0,7); mctx.fillStyle=gold; mctx.fill(); mctx.strokeStyle='#fff'; mctx.lineWidth=1.5; mctx.stroke();});
+  idx.forEach(i=>{const[x,y]=pt(i,R*vals[i]/5); mctx.beginPath(); mctx.arc(x,y,6,0,7); mctx.fillStyle=gold; mctx.fill(); mctx.strokeStyle='#fff'; mctx.lineWidth=1.5; mctx.stroke();});
 }
+// mobile : radar repliable
+(function(){
+  const head=document.getElementById('mrHead'), box=document.querySelector('.side-radar');
+  head.addEventListener('click',()=>{
+    if(!matchMedia('(max-width:959px)').matches) return;
+    const c=box.classList.toggle('collapsed');
+    head.setAttribute('aria-expanded', c?'false':'true');
+  });
+})();
 
 // ================= synthèse + axes & recommandations =================
 function levelOf(v){ return v<2?0 : v<3?1 : v<4?2 : 3; }
@@ -991,7 +1086,7 @@ function onPdf(){
   setTimeout(()=>{
     try{
       buildPdf({first:v.fFirst, last:v.fLast, email:v.fEmail, company:v.fCompany});
-      msg.className='fmsg'; msg.textContent=U.fNote;
+      msg.className='fmsg'; msg.textContent=U.fDone;
       logToSheet(v);
     }catch(e){ console.error(e); msg.className='fmsg err'; msg.textContent=U.fErrLib; }
     btn.disabled=false;
@@ -1006,201 +1101,209 @@ function logToSheet(v){
   AXES.forEach((ax,i)=>{ payload.scores[ax.key]=r2(lastScores[i]); ax.questions.forEach(q=>{ payload.answers['Q'+q.n]=answers[q.n]||''; }); });
   fetch(SHEET_URL,{method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(payload)}).catch(()=>{});
 }
+// V18 : rapport PDF en 3 pages fixes — 1) intro + diagramme + synthèse, 2) les 6 axes, 3) recommandations.
+// Si un contenu dépasse (textes plus longs en FR…), le rapport est régénéré avec une typographie légèrement réduite.
 function buildPdf(p){
+  let out=null, k=1;
+  for(let t=0;t<7;t++){ out=renderPdf(p,k); if(!out.overflow) break; k*=0.95; }
+  const U=UI[LANG];
+  const safe=t=>t.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_|_$/g,'');
+  out.doc.save(`${U.fileBase}_${safe(p.company)||'Rapport'}_${safe(p.last)}.pdf`);
+}
+function renderPdf(p,k){
   const U=UI[LANG], R=REPORT[LANG], A=analysis();
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({unit:'mm', format:'a4'});
-  const PW=210, PH=297, M=14, CW=PW-2*M, BOTTOM=PH-14;
-  const NAVY=[27,42,74], GOLD=[201,162,39], INK=[43,47,54], MUTED=[107,114,128], LINE=[226,229,234], SOFT=[237,239,244];
-  let y=0;
+  const PW=210, PH=297, M=14, CW=PW-2*M, BOTTOM=PH-13;
+  const NAVY=[27,42,74], GOLD=[201,162,39], INK=[43,47,54], MUTED=[107,114,128], LINE=[226,229,234], SOFT=[237,239,244], WHITE=[255,255,255], PALE=[205,211,224];
+  let y=0, overflow=false, limit=BOTTOM;
   const T=(t)=>String(t).replace(/[\u2009\u202F]/g,' ').replace(/\u2192/g,'->');
   const setC=(c)=>doc.setTextColor(c[0],c[1],c[2]);
-  const newPage=()=>{ doc.addPage(); y=M; };
-  const ensure=(h)=>{ if(y+h > BOTTOM) newPage(); };
-  const para=(text,size=9.5,color=INK,style='normal',lh=1.32,x=M,w=CW)=>{
-    doc.setFont('helvetica',style); doc.setFontSize(size); setC(color);
-    const lines=doc.splitTextToSize(T(text), w), step=size*0.3528*lh;
-    lines.forEach(l=>{ ensure(step); doc.text(l, x, y+step*0.75); y+=step; });
+  const chk=()=>{ if(y>limit+0.01) overflow=true; };
+  const stepOf=(size,lh)=>size*0.3528*lh;
+  const para=(text,size=9,color=INK,style='normal',lh=1.3,x=M,w=CW)=>{
+    size*=k; doc.setFont('helvetica',style); doc.setFontSize(size); setC(color);
+    const lines=doc.splitTextToSize(T(text), w), st=stepOf(size,lh);
+    lines.forEach(l=>{ doc.text(l, x, y+st*0.75); y+=st; }); chk();
   };
-  const rich=(segs,size=9,x=M,w=CW,lh=1.3,color=INK)=>{
-    const step=size*0.3528*lh; doc.setFontSize(size);
+  const rich=(segs,size=9,x=M,w=CW,lh=1.28,color=INK)=>{
+    size*=k; const st=stepOf(size,lh); doc.setFontSize(size);
     const lines=[]; let line=[], lw=0;
-    segs.forEach(([txt,st])=>{
-      const style = st==='b'?'bold':st==='i'?'italic':'normal', col = st==='b'?NAVY:color;
+    segs.forEach(([txt,sty])=>{
+      const style = sty==='b'?'bold':sty==='i'?'italic':sty==='bi'?'bolditalic':'normal', col = (sty==='b'||sty==='bi')?NAVY:color;
       doc.setFont('helvetica',style);
       T(txt).split(/(\s+)/).forEach(tok=>{
         if(!tok) return;
         if(/^\s+$/.test(tok)){ if(line.length){ const sw=doc.getTextWidth(' '); line.push({t:' ',s:style,c:col,w:sw}); lw+=sw; } return; }
         const tw=doc.getTextWidth(tok);
-        if(lw+tw>w && line.length){
-          while(line.length && line[line.length-1].t===' '){ lw-=line.pop().w; }
-          lines.push(line); line=[]; lw=0;
-        }
+        if(lw+tw>w && line.length){ while(line.length && line[line.length-1].t===' '){ lw-=line.pop().w; } lines.push(line); line=[]; lw=0; }
         line.push({t:tok,s:style,c:col,w:tw}); lw+=tw;
       });
     });
     if(line.length) lines.push(line);
-    lines.forEach(ln=>{
-      ensure(step); let xx=x;
-      ln.forEach(pc=>{ doc.setFont('helvetica',pc.s); setC(pc.c); doc.text(pc.t, xx, y+step*0.75); xx+=pc.w; });
-      y+=step;
-    });
+    lines.forEach(ln=>{ let xx=x; ln.forEach(pc=>{ doc.setFont('helvetica',pc.s); setC(pc.c); doc.text(pc.t, xx, y+st*0.75); xx+=pc.w; }); y+=st; });
+    chk();
   };
-  const bullet=(segs,size=9)=>{
-    ensure(size*0.3528*1.3);
-    doc.setFont('helvetica','bold'); doc.setFontSize(size); setC(GOLD);
-    doc.text('•', M+1.5, y+size*0.3528*1.3*0.75);
-    rich(segs,size,M+5,CW-5); y+=0.4;
+  const bullet=(text,size=8.6,x=M)=>{
+    doc.setFont('helvetica','bold'); doc.setFontSize(size*k); setC(GOLD);
+    doc.text('•', x+1.2, y+stepOf(size*k,1.26)*0.75);
+    rich([[text]],size,x+4.5,CW-(x-M)-4.5,1.26); y+=0.3*k;
   };
   const h2=(text)=>{
-    ensure(30); y+=1.5;
-    doc.setFillColor(...GOLD); doc.rect(M, y+0.8, 2.4, 5, 'F');
-    doc.setFont('helvetica','bold'); doc.setFontSize(12.5); setC(NAVY); doc.text(T(text), M+5, y+5);
-    y+=8.5;
+    y+=1.2*k;
+    doc.setFillColor(...GOLD); doc.rect(M, y+0.6, 2.2, 4.6*k, 'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(12*k); setC(NAVY); doc.text(T(text), M+5, y+4.6*k);
+    y+=7.6*k;
   };
+  const pageTop=()=>{ y=M; limit=BOTTOM; };
 
-  // en-tête
-  doc.setFillColor(...NAVY); doc.rect(0,0,PW,14,'F');
-  doc.setFont('helvetica','bold'); doc.setFontSize(9); setC(GOLD); doc.text('WENEGO', M, 9);
-  doc.setFontSize(13); doc.setTextColor(255,255,255); doc.text(T(U.pdfTitle), PW-M, 9.3, {align:'right'});
-  y=19;
+  // ================= PAGE 1 : intro, diagramme, synthèse =================
+  doc.setFillColor(...NAVY); doc.rect(0,0,PW,15,'F');
+  if(LOGO_SRC && LOGO_SRC.startsWith('data:image/png')){
+    try{ doc.addImage(LOGO_SRC,'PNG', M, 3.6, 33, 33*106/457); }catch(e){ doc.setFont('helvetica','bold'); doc.setFontSize(10); setC(GOLD); doc.text('WENEGO', M, 9.5); }
+  } else { doc.setFont('helvetica','bold'); doc.setFontSize(10); setC(GOLD); doc.text('WENEGO', M, 9.5); }
+  doc.setFont('helvetica','bold'); doc.setFontSize(13); setC(WHITE); doc.text(T(U.pdfTitle), PW-M, 9.8, {align:'right'});
+  y=20;
 
-  // score
+  // score global
   {
     const lvl = lastGlobal==null ? null : levelOf(lastGlobal);
-    doc.setFont('helvetica','normal'); doc.setFontSize(9);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8.8*k);
     const desc = lvl==null ? [] : doc.splitTextToSize(T(U.levelDesc[lvl]), CW-14);
-    const bh = 17 + desc.length*3.9 + (desc.length?1.5:0);
+    const ds=stepOf(8.8*k,1.3);
+    const bh = 15.5 + desc.length*ds + (desc.length?1.2:0);
     doc.setFillColor(...SOFT); doc.roundedRect(M, y, CW, bh, 2, 2, 'F');
-    doc.setFillColor(...GOLD); doc.rect(M, y, 2.4, bh, 'F');
-    doc.setFont('helvetica','bold'); doc.setFontSize(8); setC(MUTED); doc.text(T(U.resultTitle).toUpperCase(), M+7, y+6);
-    doc.setFontSize(19); setC(GOLD); doc.text(fmtScore(lastGlobal)+' / 5', M+7, y+14);
+    doc.setFillColor(...GOLD); doc.rect(M, y, 2.2, bh, 'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(7.5); setC(MUTED); doc.text(T(U.resultTitle).toUpperCase(), M+7, y+5.5);
+    doc.setFontSize(18); setC(GOLD); doc.text(fmtScore(lastGlobal)+' / 5', M+7, y+12.8);
     if(lvl!=null){
-      doc.setFontSize(8); setC(MUTED); doc.text(T(U.levelLbl).toUpperCase(), M+CW-6, y+6, {align:'right'});
-      doc.setFontSize(13); setC(NAVY); doc.text(T(U.levels[lvl]), M+CW-6, y+13, {align:'right'});
-      doc.setFont('helvetica','normal'); doc.setFontSize(9); setC(INK);
-      desc.forEach((l,j)=>doc.text(l, M+7, y+19.5+j*3.9));
+      doc.setFontSize(7.5); setC(MUTED); doc.text(T(U.levelLbl).toUpperCase(), M+CW-6, y+5.5, {align:'right'});
+      doc.setFontSize(12.5); setC(NAVY); doc.text(T(U.levels[lvl]), M+CW-6, y+12, {align:'right'});
+      doc.setFont('helvetica','normal'); doc.setFontSize(8.8*k); setC(INK);
+      desc.forEach((l,j)=>doc.text(l, M+7, y+17.6+j*ds));
     }
-    y+=bh+3.5;
+    y+=bh+3;
   }
 
   // participant
-  const date=new Date().toLocaleDateString(LANG==='fr'?'fr-FR':'en-GB',{day:'numeric',month:'long',year:'numeric'});
-  const info=[[U.pdfFor, p.first+' '+p.last],[U.pdfCompany, p.company],[U.pdfEmail, p.email],[U.pdfDate, date]];
-  doc.setDrawColor(...LINE); doc.setLineWidth(0.3); doc.roundedRect(M, y, CW, 19, 2, 2, 'S');
-  info.forEach((r,k)=>{
-    const cx = M+4 + (k%2)*(CW/2), cy = y+7 + Math.floor(k/2)*8;
-    doc.setFont('helvetica','bold'); doc.setFontSize(7); setC(MUTED); doc.text(T(r[0]).toUpperCase(), cx, cy-2.8);
-    doc.setFont('helvetica','bold'); doc.setFontSize(9.5); setC(NAVY);
-    doc.text(doc.splitTextToSize(T(r[1]), CW/2-10)[0], cx, cy+1.2);
-  });
-  y+=22;
+  {
+    const date=new Date().toLocaleDateString(LANG==='fr'?'fr-FR':'en-GB',{day:'numeric',month:'long',year:'numeric'});
+    const info=[[U.pdfFor, p.first+' '+p.last],[U.pdfCompany, p.company],[U.pdfEmail, p.email],[U.pdfDate, date]];
+    const cw4=CW/4;
+    doc.setDrawColor(...LINE); doc.setLineWidth(0.3); doc.roundedRect(M, y, CW, 11, 2, 2, 'S');
+    info.forEach((r,i)=>{
+      const cx=M+3.5+i*cw4;
+      doc.setFont('helvetica','bold'); doc.setFontSize(6.5); setC(MUTED); doc.text(T(r[0]).toUpperCase(), cx, y+4.3);
+      doc.setFontSize(8.6); setC(NAVY); doc.text(doc.splitTextToSize(T(r[1]), cw4-5)[0], cx, y+8.6);
+    });
+    y+=14;
+  }
 
   // introduction
   h2(U.pdfIntroH);
-  U.pdfIntro.forEach(t=>{ para(t); y+=1; });
-  U.introAxes.forEach(t=>{ para('•  '+t.replace(/<[^>]+>/g,''), 9, INK, 'normal', 1.3, M+2, CW-2); });
-  y+=1;
+  U.pdfIntro.forEach(t=>{ para(t, 8.8); y+=0.8*k; });
+  U.introAxes.forEach(t=>bullet(t.replace(/<[^>]+>/g,''), 8.3));
+  y+=1.5*k;
 
-  // diagramme
-  const off=document.createElement('canvas');
-  drawRadarChart(off, lastScores, 1650, 1290, 48);
-  const imgW = 140, imgH = imgW * off.height / off.width;
-  ensure(imgH+22);
-  h2(U.pdfDiagramH);
-  doc.addImage(off.toDataURL('image/jpeg',0.92),'JPEG', M+(CW-imgW)/2, y, imgW, imgH);
-  y+=imgH+2;
-  para(U.pdfDiagramNote, 8, MUTED, 'italic');
-  y+=1;
-
-  // synthèse
+  // diagramme (gauche) + tableau des scores (droite)
   h2(U.summaryH);
-  if(A.balance){ para(A.balance); y+=1; }
-  if(A.incomplete){ para(U.incomplete, 8.5, MUTED, 'italic'); y+=1; }
+  {
+    const top=y, imgW=80, cvW=1300, cvH=1120;
+    const off=document.createElement('canvas');
+    drawRadarChart(off, lastScores, cvW, cvH, 46);
+    const imgH=imgW*cvH/cvW;
+    doc.addImage(off.toDataURL('image/jpeg',0.9),'JPEG', M, top, imgW, imgH);
+    doc.setDrawColor(...LINE); doc.setLineWidth(0.3); doc.roundedRect(M, top, imgW, imgH, 2, 2, 'S');
 
-  ensure(10+AXES.length*6.5); y+=2.5;
-  doc.setFont('helvetica','bold'); doc.setFontSize(7.5); setC(MUTED);
-  doc.text(T(U.colAxis).toUpperCase(), M, y); doc.text(T(U.colScore).toUpperCase(), M+64, y); doc.text(T(U.colLevel).toUpperCase(), M+CW, y, {align:'right'});
-  y+=1.8; doc.setDrawColor(...LINE); doc.setLineWidth(0.3); doc.line(M, y, M+CW, y); y+=1;
-  A.rows.forEach(r=>{
-    const rowY=y+4.2;
-    doc.setFont('helvetica','bold'); doc.setFontSize(9.5); setC(NAVY); doc.text(T((r.i+1)+'. '+r.name), M, rowY);
-    const bx=M+64, bw=70;
-    doc.setFillColor(...SOFT); doc.roundedRect(bx, rowY-2.8, bw, 3.2, 1.1, 1.1, 'F');
-    if(r.v!=null){ doc.setFillColor(...GOLD); doc.roundedRect(bx, rowY-2.8, Math.max(2.2, bw*r.v/5), 3.2, 1.1, 1.1, 'F'); }
-    setC(INK); doc.setFontSize(9); doc.text(fmtScore(r.v), bx+bw+3, rowY);
-    doc.setFont('helvetica','normal'); setC(MUTED); doc.text(r.v==null?'—':T(U.levels[levelOf(r.v)]), M+CW, rowY, {align:'right'});
-    y+=6.3; doc.line(M, y, M+CW, y); y+=0.3;
-  });
-  y+=3;
-
-  const colW=(CW-5)/2;
-  const listBox=(title, arr, x, y0)=>{
-    let yy=y0+5.5;
-    doc.setFont('helvetica','bold'); doc.setFontSize(7.5); setC(MUTED); doc.text(T(title).toUpperCase(), x+3.5, yy); yy+=5;
-    arr.forEach(r=>{
-      doc.setFont('helvetica','bold'); doc.setFontSize(9.5); setC(NAVY); doc.text(T((r.i+1)+'. '+r.name), x+3.5, yy);
-      doc.setFont('helvetica','normal'); setC(INK); doc.text(fmtScore(r.v)+' / 5 · '+T(U.levels[levelOf(r.v)]), x+colW-3.5, yy, {align:'right'});
-      yy+=5;
+    const x0=M+imgW+6, w=CW-imgW-6, bx=x0+31, bw=w-31-34;
+    let ty=top+3;
+    doc.setFont('helvetica','bold'); doc.setFontSize(7); setC(MUTED);
+    doc.text(T(U.colAxis).toUpperCase(), x0, ty); doc.text(T(U.colScore).toUpperCase(), bx, ty); doc.text(T(U.colLevel).toUpperCase(), x0+w, ty, {align:'right'});
+    ty+=1.6; doc.setDrawColor(...LINE); doc.line(x0, ty, x0+w, ty); ty+=0.6;
+    const rowH=Math.max(6.2, (imgH-12)/AXES.length);
+    A.rows.forEach(r=>{
+      const ry=ty+rowH/2+1.3;
+      doc.setFont('helvetica','bold'); doc.setFontSize(8.6); setC(NAVY); doc.text(T((r.i+1)+'. '+r.name), x0, ry);
+      doc.setFillColor(...SOFT); doc.roundedRect(bx, ry-2.6, bw, 3, 1, 1, 'F');
+      if(r.v!=null){ doc.setFillColor(...GOLD); doc.roundedRect(bx, ry-2.6, Math.max(2, bw*r.v/5), 3, 1, 1, 'F'); }
+      setC(INK); doc.setFontSize(8.4); doc.text(fmtScore(r.v), bx+bw+2, ry);
+      doc.setFont('helvetica','normal'); setC(MUTED); doc.text(r.v==null?'—':T(U.levels[levelOf(r.v)]), x0+w, ry, {align:'right'});
+      ty+=rowH; doc.line(x0, ty, x0+w, ty);
     });
-  };
+    y=Math.max(top+imgH, ty)+2.5;
+    para(U.pdfDiagramNote, 7.6, MUTED, 'italic', 1.25);
+    y+=1.2*k;
+  }
+  if(A.balance){ para(A.balance, 8.8); y+=0.8*k; }
+  if(A.incomplete){ para(U.incomplete, 8, MUTED, 'italic'); y+=0.8*k; }
+
+  // points forts / axes prioritaires
   if(A.strengths.length){
-    const boxH = 9 + Math.max(A.strengths.length, A.priorities.length)*5;
-    ensure(boxH+2);
-    doc.setDrawColor(...LINE); doc.roundedRect(M, y, colW, boxH, 2, 2, 'S');
-    listBox(U.strengthsH, A.strengths, M, y);
-    if(A.priorities.length){ doc.roundedRect(M+colW+5, y, colW, boxH, 2, 2, 'S'); listBox(U.prioritiesH, A.priorities, M+colW+5, y); }
-    y+=boxH+2;
+    const colW=(CW-5)/2, n=Math.max(A.strengths.length, A.priorities.length), boxH=8+n*5;
+    const box=(title, arr, x)=>{
+      doc.setDrawColor(...LINE); doc.roundedRect(x, y, colW, boxH, 2, 2, 'S');
+      let yy=y+5;
+      doc.setFont('helvetica','bold'); doc.setFontSize(7); setC(MUTED); doc.text(T(title).toUpperCase(), x+3.5, yy); yy+=5;
+      arr.forEach(r=>{
+        doc.setFont('helvetica','bold'); doc.setFontSize(8.8); setC(NAVY); doc.text(T((r.i+1)+'. '+r.name), x+3.5, yy);
+        doc.setFont('helvetica','normal'); setC(INK); doc.text(fmtScore(r.v)+' / 5 · '+T(U.levels[levelOf(r.v)]), x+colW-3.5, yy, {align:'right'});
+        yy+=5;
+      });
+    };
+    box(U.strengthsH, A.strengths, M);
+    if(A.priorities.length) box(U.prioritiesH, A.priorities, M+colW+5);
+    y+=boxH; chk();
   }
 
-  // les 6 axes expliqués
-  y+=2;
-  h2(U.pdfAxesH);
+  // ================= PAGE 2 : les 6 axes expliqués =================
+  doc.addPage(); pageTop();
+  h2(U.pdfAxesH); y+=0.5*k;
   U.explains.forEach((e,i)=>{
-    ensure(24);
-    doc.setFillColor(...SOFT); doc.roundedRect(M, y, CW, 7, 1.5, 1.5, 'F');
-    doc.setFont('helvetica','bold'); doc.setFontSize(10); setC(GOLD); doc.text((i+1)+'.', M+2.5, y+4.9);
-    setC(NAVY); doc.text(T(e.sum), M+8, y+4.9);
-    doc.setFontSize(9); setC(GOLD); doc.text(T(U.yourScore)+(LANG==='fr'?' : ':': ')+fmtScore(lastScores[i])+' / 5', M+CW-2.5, y+4.9, {align:'right'});
-    y+=8.5;
-    [[U.kDef,e.def],[U.kEx,e.ex],[U.kCrit,e.crit]].forEach(([k,t])=>{
-      rich([[k+' ','b'],[t]], 9, M+2, CW-4); y+=0.6;
-    });
-    y+=1.8;
+    const bh=6.6*k;
+    doc.setFillColor(...SOFT); doc.roundedRect(M, y, CW, bh, 1.5, 1.5, 'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(9.6*k); setC(GOLD); doc.text((i+1)+'.', M+2.5, y+bh*0.68);
+    setC(NAVY); doc.text(T(e.sum), M+8, y+bh*0.68);
+    doc.setFontSize(8.6*k); setC(GOLD); doc.text(T(U.yourScore)+(LANG==='fr'?' : ':': ')+fmtScore(lastScores[i])+' / 5', M+CW-2.5, y+bh*0.68, {align:'right'});
+    y+=bh+1.6*k;
+    [[U.kDef,e.def],[U.kEx,e.ex],[U.kCrit,e.crit]].forEach(([kk,t])=>{ rich([[kk+' ','b'],[t]], 8.8, M+2, CW-4); y+=0.5*k; });
+    y+=2.6*k;
   });
+  chk();
 
-  // recommandations
-  y+=2;
+  // ================= PAGE 3 : recommandations + bloc WeNego =================
+  doc.addPage(); pageTop();
   h2(R.recH);
-  para(R.recSub, 9, MUTED, 'italic'); y+=1.5;
+  para(R.recSub, 8.6, MUTED, 'italic'); y+=1.2*k;
   R.rec.forEach((r,i)=>{
-    ensure(22);
-    const isPrio = A.priorities.some(x=>x.i===i);
-    doc.setFillColor(...SOFT); doc.roundedRect(M, y, CW, 7, 1.5, 1.5, 'F');
-    if(isPrio){ doc.setFillColor(...GOLD); doc.rect(M, y, 2, 7, 'F'); }
-    doc.setFont('helvetica','bold'); doc.setFontSize(10); setC(GOLD); doc.text((i+1)+'.', M+3.5, y+4.9);
-    setC(NAVY); doc.text(T(r.t), M+9, y+4.9);
-    doc.setFontSize(8.5); setC(GOLD);
-    const right = (isPrio ? T(R.prioTag)+'  ·  ' : '') + fmtScore(lastScores[i])+' / 5';
-    doc.text(right, M+CW-2.5, y+4.9, {align:'right'});
-    y+=8.5;
-    para(r.s, 9, NAVY, 'bolditalic', 1.28); y+=0.6;
-    r.items.forEach(t=>bullet([[t]]));
-    y+=2;
+    const isPrio=A.priorities.some(x=>x.i===i), bh=6.4*k;
+    doc.setFillColor(...SOFT); doc.roundedRect(M, y, CW, bh, 1.5, 1.5, 'F');
+    if(isPrio){ doc.setFillColor(...GOLD); doc.rect(M, y, 2, bh, 'F'); }
+    doc.setFont('helvetica','bold'); doc.setFontSize(9.6*k); setC(GOLD); doc.text((i+1)+'.', M+3.5, y+bh*0.68);
+    setC(NAVY); doc.text(T(r.t), M+9, y+bh*0.68);
+    const tw=doc.getTextWidth(T(r.t));
+    doc.setFont('helvetica','bolditalic'); doc.setFontSize(8.6*k); setC(INK);
+    const room=CW-9-tw-6-40;
+    const sub=doc.splitTextToSize(T(' — '+r.s), Math.max(20,room))[0];
+    doc.text(sub, M+9+tw+1, y+bh*0.68);
+    doc.setFont('helvetica','bold'); setC(GOLD);
+    doc.text((isPrio ? T(R.prioTag)+'  ·  ' : '')+fmtScore(lastScores[i])+' / 5', M+CW-2.5, y+bh*0.68, {align:'right'});
+    y+=bh+1.4*k;
+    r.items.forEach(t=>bullet(t, 8.4));
+    y+=2*k;
   });
+  chk();
 
   // pieds de page
   const n=doc.getNumberOfPages();
-  for(let k=1;k<=n;k++){
-    doc.setPage(k);
-    doc.setDrawColor(...LINE); doc.setLineWidth(0.3); doc.line(M, PH-10, PW-M, PH-10);
-    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); setC(MUTED);
-    doc.text(T(U.pdfFooter), M, PH-6); doc.text(k+' / '+n, PW-M, PH-6, {align:'right'});
+  for(let pg=1;pg<=n;pg++){
+    doc.setPage(pg);
+    doc.setDrawColor(...LINE); doc.setLineWidth(0.3); doc.line(M, PH-9.5, PW-M, PH-9.5);
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.3); setC(MUTED);
+    doc.text(T(U.pdfFooter), M, PH-5.8); doc.text(pg+' / '+n, PW-M, PH-5.8, {align:'right'});
   }
-
-  const safe=t=>t.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_|_$/g,'');
-  doc.save(`${U.fileBase}_${safe(p.company)||'Rapport'}_${safe(p.last)}.pdf`);
+  return {doc, overflow};
 }
+
 
 matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{ if(cur>=1&&cur<=NAX) updateMini(); });
 
