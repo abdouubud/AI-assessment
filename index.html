@@ -151,6 +151,7 @@
 
   /* 2 colonnes : 6 axes (gauche) | diagramme (droite) */
   .rgrid{display:grid; grid-template-columns:minmax(0,1fr); gap:28px; align-items:start}
+  h3.sum-h{margin:0 0 12px; font-size:var(--fs-title); color:var(--navy); text-align:center}
   .rgrid h3.rh{margin:0 0 12px; font-size:var(--fs-title); color:var(--navy); text-align:center}
   .diagram-card{background:#fff; border-radius:12px; overflow:hidden}
   @media (min-width:900px){
@@ -710,6 +711,7 @@ function buildScreens(){
   const req='<span class="req" aria-hidden="true">*</span>';
   res.innerHTML=`
     <h2 class="result-title">${U.resultTitle} : <span id="gscore">—</span> / 5</h2>
+    <h3 class="rh sum-h">${U.summaryH}</h3>
     <div class="sumgrid" id="sumgrid"></div>
     <div class="rgrid">
       <div class="rleft">
